@@ -1,6 +1,11 @@
 from random import randint, uniform,random
 import random
-import sys
+from firebase import firebase
+
+firebase = firebase.FirebaseApplication("https://juego-python-default-rtdb.firebaseio.com/",None)
+
+
+
 
 
 class Pista():
@@ -50,7 +55,7 @@ class Carro():
     def moverse(self):
         mov_mts = (randint(1,6)*100) 
         self.mov_total += mov_mts
-        print(self.conductor,"se mueve",mov_mts,"m ","-->","total",self.mov_total,"m")
+        print(self.conductor,"se mueve",mov_mts,"m ","-->","total recorrido",self.mov_total,"m")
 
 
 num_players =0
@@ -70,7 +75,7 @@ def juegar():
         try:    
             num_players = int(input("Selecciona el número de jugadores (entre 3 y 5)\n"))
             if num_players > 5 or  num_players <3 :
-                print("selecciona un numero valido")
+                print("Selecciona un número válido")
                 continue
             break
         except ValueError:
@@ -128,6 +133,102 @@ def juegar():
                 #   break
                 if j==3:
                     break
+    #Fin de la carrera, guardado de Podio
+                
+    datosPodio={
+        'id':'0',
+        'puesto1':ganadores[0],
+        'puesto2':ganadores[1],
+        'puesto3':ganadores[2]
+        }
+    
+    #resultado=firebase.post('/juego_python/podios',datosPodio)
+    #print(resultado['name'])
+
+    #fbUpdate= '/juego_python/podios/'+resultado['name']
+    #update_datos = firebase.put(fbUpdate,'id',resultado['name'])
+
+    #guardado de ganadores
+
+    leer = firebase.get('/juego_python/podios','')
+    #print(leer)
+    '''
+    for j in range(3):
+        datosGanador={
+            'id':'0',
+            'nombre':ganadores[j],
+            'total1ro':'0',
+            'total2do':'0',
+            'total3ro':'0'
+        }
+        
+        resultado=firebase.post('/juego_python/ganadores',datosGanador)
+        #print(resultado['name'])
+    
+        fbUpdate= '/juego_python/ganadores/'+resultado['name']
+        update_datos = firebase.put(fbUpdate,'id',resultado['name'])
+        
+    '''
+
+    for j in range(3):
+        ganadoresFB = firebase.get('/juego_python/ganadores','')
+        #ref = firebase.reference('/juego_python/ganadores','')
+        #ganadores = ref.get()
+        #print(best_sellers)
+        puesto = ""
+        countExist =0
+        for key, value in ganadoresFB.items():
+            #print(key,"---",value["nombre"],"-ñ-ñ",ganadores[j])
+            if(value["nombre"] == ganadores[j]):
+                countExist+=1
+                #print("entro")
+                if j==0:
+                    puesto = "total1ro"
+                elif j==1:
+                    puesto = "total2do"
+                elif j==2:
+                    puesto = "total3ro"
+                total  =  int(value[puesto]) +1
+                
+                #print(puesto,"-->",total)
+                fbUpdate= '/juego_python/ganadores/'+key
+                update_datos = firebase.put(fbUpdate,puesto,total)
+                print("Se actualizo ",ganadores[j],"donde quedo por",total,"vez en",j+1,"lugar")
+                break
+                    #ganadores.child(key).update({puesto:total})
+        #print("countExist-",countExist)
+        if countExist==0:
+            if j==0:
+                 datosGanador={
+                    'id':'0',
+                    'nombre':ganadores[j],
+                    'total1ro':'1',
+                    'total2do':'0',
+                    'total3ro':'0'
+                }
+            elif j==1:
+                datosGanador={
+                    'id':'0',
+                    'nombre':ganadores[j],
+                    'total1ro':'0',
+                    'total2do':'1',
+                    'total3ro':'0'
+                    }
+            elif j==2:
+                datosGanador={
+                    'id':'0',
+                    'nombre':ganadores[j],
+                    'total1ro':'0',
+                    'total2do':'0',
+                    'total3ro':'1'
+                }            
+            countExist=1
+            resultado=firebase.post('/juego_python/ganadores',datosGanador)
+            print("Se creo el nuevo ganador",ganadores[j],"donde quedo por primera vez en",j+1,"lugar")
+            fbUpdate= '/juego_python/ganadores/'+resultado['name']
+            update_datos = firebase.put(fbUpdate,'id',resultado['name'])
+            continue
+    #volver a jugar
     volverJugar=input("¿Quieres jugar otra vez?s/n\n")
     return volverJugar
             
@@ -140,7 +241,7 @@ Inicio del juego
 print("*****---- ¡Bienvenido al juego de carreras de Nia! ---- *******")
 print("Escoge una opción:\n(Escribe el número de la opción para seleccionarla)")
 
-# Ver histórico(fireBase)
+# Selección de opciones
 while True:
     try:
         opcionJuego =input("1- Jugar\n2-Ver el histórico de ganadores\n")
