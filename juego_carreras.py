@@ -231,7 +231,14 @@ def juegar():
     #volver a jugar
     volverJugar=input("¿Quieres jugar otra vez?s/n\n")
     return volverJugar
-            
+
+def showGanadores():
+    j=1
+    ganadoresFB = firebase.get('/juego_python/ganadores','')
+    for key, value in ganadoresFB.items():
+            #print(key,"---",value["nombre"],"-ñ-ñ",ganadores[j])
+        print(j,"jugador:",value["nombre"],"\n primer puesto:",value["total1ro"],"\n segundo puesto:",value["total2do"],"\n tercero puesto:",value["total3ro"])
+        j+=1 
 """
 Inicio del juego
 
@@ -253,7 +260,8 @@ while True:
                 if keepPlaying == "n":
                     jugar=1
         elif opcionJuego == "2":
-            break
+            showGanadores()
+            continue
         else:
             print("Gracias por juegar")
             break
